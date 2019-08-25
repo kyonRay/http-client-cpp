@@ -7,6 +7,7 @@
 *.d
 build
 build/*
+test.file*
 # Compiled Object files
 *.slo
 *.lo
@@ -67,10 +68,7 @@ Temporary Items
 
 ### VisualStudioCode ###
 .vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
+.vscode
 
 ### VisualStudioCode Patch ###
 # Ignore all local history of files

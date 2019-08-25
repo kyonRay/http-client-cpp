@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <vector>
 #include <curl/curl.h>
 #include <functional>
 #include <iostream>
@@ -132,8 +133,6 @@ protected:
 
    // Curl callbacks
    static size_t WriteInStringCallback(void* ptr, size_t size, size_t nmemb, void* data);
-   static size_t WriteToFileCallback(void* ptr, size_t size, size_t nmemb, void* data);
-   static size_t ReadFromFileCallback(void* ptr, size_t size, size_t nmemb, void* stream);
    static size_t ThrowAwayCallback(void* ptr, size_t size, size_t nmemb, void* data);
    static size_t RestWriteCallback(void* ptr, size_t size, size_t nmemb, void* userdata);
    static size_t RestHeaderCallback(void* ptr, size_t size, size_t nmemb, void* userdata);
@@ -172,3 +171,15 @@ protected:
    LogFnCallback         m_oLog;
 
 };
+
+// Logs messages
+#define LOG_ERROR_EMPTY_HOST_MSG                "[CppHTTPClient][Error] Empty hostname."
+#define LOG_WARNING_OBJECT_NOT_CLEANED          "[CppHTTPClient][Warning] Object was freed before calling " \
+                                                "CHTTPClient::CleanupSession(). The API session was cleaned though."
+#define LOG_ERROR_CURL_ALREADY_INIT_MSG         "[CppHTTPClient][Error] Curl session is already initialized ! " \
+                                                "Use CleanupSession() to clean the present one."
+#define LOG_ERROR_CURL_NOT_INIT_MSG             "[CppHTTPClient][Error] Curl session is not initialized ! Use InitSession() before."
+
+
+#define LOG_ERROR_CURL_REST_FAILURE_FORMAT      "[CppHTTPClient][Error] Unable to perform a REST request from '%s' " \
+                                                "(Error = %d | %s)"
