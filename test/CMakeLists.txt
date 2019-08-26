@@ -12,7 +12,7 @@ include_directories(${GTEST_INCLUDE_DIRS})
 
 include_directories(../HTTP)
 include_directories(./)
-include_directories(./rapidjson)
+include_directories(../rapidjson)
 
 #Output Setup
 add_executable(test_httpclient test.cpp)
