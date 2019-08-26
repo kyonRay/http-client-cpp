@@ -20,7 +20,11 @@
 
 ## 使用举例
 
+1. 使用 `CppHTTPClient` 类进行HTTP请求
+
 ```c++
+#include "httpclient.h"
+
 CppHTTPClient::HeadersMap RequestHeaders;
 CppHTTPClient::HttpResponse ServerResponse;
 
@@ -37,6 +41,31 @@ if (pRESTClient.Post("http://196.128.0.0:8800", RequestHeaders, strPostData, Ser
     cout << ServerResponse.strBody << endl;
 }
 pRESTClient.CleanupSession();
+```
+
+2. 使用封装的REST方式进行HTTP请求
+
+```c++
+#include "restwrapper.h"
+
+std::string strPostData = "{\"DATA\":\"TEST\"}";
+cout << PostWrapper("http://192.168.0.0:8800", "", strPostData) << endl;
+```
+
+输出：
+
+```JSON
+{
+    "Status-Code":200,
+    "Headers":[{
+        "Content-Type":"application/json;charset=UTF-8",
+        "Transfer-Encoding":"chunked",
+        ...
+        }],
+    "Body":{
+        ...
+    }
+}
 ```
 
 ## 编译安装

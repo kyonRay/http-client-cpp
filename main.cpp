@@ -15,8 +15,7 @@ int main(int argc, char const *argv[])
     istreambuf_iterator<char> begin2(in2);
     istreambuf_iterator<char> end2;
     string ipPort(begin2, end2);
-    ipPort.pop_back();
-    
+
     // ipPort : http://{{ip}}:{{port}}
     cout << PostWrapper(ipPort, "", strPostData) << endl;
     return 0;
