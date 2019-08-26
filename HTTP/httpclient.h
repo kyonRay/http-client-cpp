@@ -11,7 +11,9 @@
 #include <stdio.h>
 #include <string>
 #include <unordered_map>
-
+#include <mutex>
+#include <memory>
+#include <cstdarg>
 
 class CppHTTPClient
 {
@@ -151,12 +153,8 @@ protected:
 
 // Logs messages
 #define LOG_ERROR_EMPTY_HOST_MSG                "[CppHTTPClient][Error] Empty hostname."
-#define LOG_WARNING_OBJECT_NOT_CLEANED          "[CppHTTPClient][Warning] Object was freed before calling " \
-                                                "CHTTPClient::CleanupSession(). The API session was cleaned though."
-#define LOG_ERROR_CURL_ALREADY_INIT_MSG         "[CppHTTPClient][Error] Curl session is already initialized ! " \
-                                                "Use CleanupSession() to clean the present one."
+#define LOG_WARNING_OBJECT_NOT_CLEANED          "[CppHTTPClient][Warning] Object was freed before calling CHTTPClient::CleanupSession(). The API session was cleaned though."
+#define LOG_ERROR_CURL_ALREADY_INIT_MSG         "[CppHTTPClient][Error] Curl session is already initialized ! Use CleanupSession() to clean the present one."
 #define LOG_ERROR_CURL_NOT_INIT_MSG             "[CppHTTPClient][Error] Curl session is not initialized ! Use InitSession() before."
 
-
-#define LOG_ERROR_CURL_REST_FAILURE_FORMAT      "[CppHTTPClient][Error] Unable to perform a REST request from '%s' " \
-                                                "(Error = %d | %s)"
+#define LOG_ERROR_CURL_REST_FAILURE_FORMAT      "[CppHTTPClient][Error] Unable to perform a REST request from '%s' (Error = %d | %s)"
