@@ -26,8 +26,9 @@ int main(int argc, char const *argv[])
     RequestHeaders.emplace("Content-Type", "application/json");
     if (pRESTClient.Post(ipPort, RequestHeaders, strPostData, ServerResponse))
     {
-
-        cout << ServerResponse.iCode << endl;
+        // Print whole Response
+        cout << CppHTTPClient::ParseHttpResponse(ServerResponse) << endl;
+        // Print Body
         cout << ServerResponse.strBody << endl;
     }
     pRESTClient.CleanupSession();

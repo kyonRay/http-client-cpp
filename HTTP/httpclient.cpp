@@ -1,9 +1,9 @@
 #include "httpclient.h"
 
 // Static members initialization
-volatile int   CppHTTPClient::s_iCurlSession = 0;
-std::string    CppHTTPClient::s_strCertificationAuthorityFile;
-std::mutex     CppHTTPClient::s_mtxCurlSession;
+volatile int CppHTTPClient::s_iCurlSession = 0;
+std::string CppHTTPClient::s_strCertificationAuthorityFile;
+std::mutex CppHTTPClient::s_mtxCurlSession;
 
 /**
  * @brief constructor of the HTTP client object
@@ -11,14 +11,13 @@ std::mutex     CppHTTPClient::s_mtxCurlSession;
  * @param Logger - a callabck to a logger function void(const std::string&)
  *
  */
-CppHTTPClient::CppHTTPClient(LogFnCallback Logger) :
-   m_oLog(Logger),
-   m_iCurlTimeout(0),
-   m_bHTTPS(false),
-   m_bNoSignal(false),
-   m_eSettingsFlags(ALL_FLAGS),
-   m_pCurlSession(nullptr),
-   m_pHeaderlist(nullptr)
+CppHTTPClient::CppHTTPClient(LogFnCallback Logger) : m_oLog(Logger),
+                                                     m_iCurlTimeout(0),
+                                                     m_bHTTPS(false),
+                                                     m_bNoSignal(false),
+                                                     m_eSettingsFlags(ALL_FLAGS),
+                                                     m_pCurlSession(nullptr),
+                                                     m_pHeaderlist(nullptr)
 {
    s_mtxCurlSession.lock();
    if (s_iCurlSession++ == 0)
@@ -67,8 +66,8 @@ CppHTTPClient::~CppHTTPClient()
  *    m_pHTTPClient->InitSession();
  * @endcode
  */
-const bool CppHTTPClient::InitSession(const bool& bHTTPS /* = false */,
-                                    const SettingsFlag& eSettingsFlags /* = ALL_FLAGS */)
+const bool CppHTTPClient::InitSession(const bool &bHTTPS /* = false */,
+                                      const SettingsFlag &eSettingsFlags /* = ALL_FLAGS */)
 {
    if (m_pCurlSession)
    {
@@ -129,7 +128,7 @@ const bool CppHTTPClient::CleanupSession()
  *
  * @param [in] strURL user URI
  */
-inline void CppHTTPClient::CheckURL(const std::string& strURL)
+inline void CppHTTPClient::CheckURL(const std::string &strURL)
 {
    std::string strTmp = strURL;
 
@@ -233,9 +232,9 @@ const CURLcode CppHTTPClient::Perform()
  * @param [in] Headers headers to send
  * @param [out] Response response data
  */
-inline const bool CppHTTPClient::InitRestRequest(const std::string& strUrl,
-                                         const CppHTTPClient::HeadersMap& Headers,
-                                         CppHTTPClient::HttpResponse& Response)
+inline const bool CppHTTPClient::InitRestRequest(const std::string &strUrl,
+                                                 const CppHTTPClient::HeadersMap &Headers,
+                                                 CppHTTPClient::HttpResponse &Response)
 {
    if (strUrl.empty())
    {
@@ -270,8 +269,8 @@ inline const bool CppHTTPClient::InitRestRequest(const std::string& strUrl,
 
    std::string strHeader;
    for (HeadersMap::const_iterator it = Headers.cbegin();
-      it != Headers.cend();
-      ++it)
+        it != Headers.cend();
+        ++it)
    {
       strHeader = it->first + ": " + it->second; // build header string
       AddHeader(strHeader);
@@ -287,7 +286,7 @@ inline const bool CppHTTPClient::InitRestRequest(const std::string& strUrl,
  * @param [out] Response response data
  */
 inline const bool CppHTTPClient::PostRestRequest(const CURLcode ePerformCode,
-                                               CppHTTPClient::HttpResponse& Response)
+                                                 CppHTTPClient::HttpResponse &Response)
 {
    // Check for errors
    if (ePerformCode != CURLE_OK)
@@ -297,7 +296,7 @@ inline const bool CppHTTPClient::PostRestRequest(const CURLcode ePerformCode,
 
       if (m_eSettingsFlags & ENABLE_LOG)
          m_oLog(StringFormat(LOG_ERROR_CURL_REST_FAILURE_FORMAT, m_strURL.c_str(), ePerformCode,
-            curl_easy_strerror(ePerformCode)));
+                             curl_easy_strerror(ePerformCode)));
 
       return false;
    }
@@ -318,9 +317,9 @@ inline const bool CppHTTPClient::PostRestRequest(const CURLcode ePerformCode,
  * @retval true   Successfully requested the URI.
  * @retval false  Encountered a problem.
  */
-const bool CppHTTPClient::Head(const std::string& strUrl,
-   const CppHTTPClient::HeadersMap& Headers,
-   CppHTTPClient::HttpResponse& Response)
+const bool CppHTTPClient::Head(const std::string &strUrl,
+                               const CppHTTPClient::HeadersMap &Headers,
+                               CppHTTPClient::HttpResponse &Response)
 {
    if (InitRestRequest(strUrl, Headers, Response))
    {
@@ -346,9 +345,9 @@ const bool CppHTTPClient::Head(const std::string& strUrl,
  * @retval true   Successfully requested the URI.
  * @retval false  Encountered a problem.
  */
-const bool CppHTTPClient::Get(const std::string& strUrl,
-   const CppHTTPClient::HeadersMap& Headers,
-   CppHTTPClient::HttpResponse& Response)
+const bool CppHTTPClient::Get(const std::string &strUrl,
+                              const CppHTTPClient::HeadersMap &Headers,
+                              CppHTTPClient::HttpResponse &Response)
 {
    if (InitRestRequest(strUrl, Headers, Response))
    {
@@ -373,9 +372,9 @@ const bool CppHTTPClient::Get(const std::string& strUrl,
  *  @retval true   Successfully requested the URI.
  * @retval false  Encountered a problem.
  */
-const bool CppHTTPClient::Del(const std::string& strUrl,
-   const CppHTTPClient::HeadersMap& Headers,
-   CppHTTPClient::HttpResponse& Response)
+const bool CppHTTPClient::Del(const std::string &strUrl,
+                              const CppHTTPClient::HeadersMap &Headers,
+                              CppHTTPClient::HttpResponse &Response)
 {
    if (InitRestRequest(strUrl, Headers, Response))
    {
@@ -389,10 +388,10 @@ const bool CppHTTPClient::Del(const std::string& strUrl,
       return false;
 }
 
-const bool CppHTTPClient::Post(const std::string& strUrl,
-   const CppHTTPClient::HeadersMap& Headers,
-   const std::string& strPostData,
-   CppHTTPClient::HttpResponse& Response)
+const bool CppHTTPClient::Post(const std::string &strUrl,
+                               const CppHTTPClient::HeadersMap &Headers,
+                               const std::string &strPostData,
+                               CppHTTPClient::HttpResponse &Response)
 {
    if (InitRestRequest(strUrl, Headers, Response))
    {
@@ -421,8 +420,8 @@ const bool CppHTTPClient::Post(const std::string& strUrl,
  * @retval true   Successfully requested the URI.
  * @retval false  Encountered a problem.
  */
-const bool CppHTTPClient::Put(const std::string& strUrl, const CppHTTPClient::HeadersMap& Headers,
-   const std::string& strPutData, CppHTTPClient::HttpResponse& Response)
+const bool CppHTTPClient::Put(const std::string &strUrl, const CppHTTPClient::HeadersMap &Headers,
+                              const std::string &strPutData, CppHTTPClient::HttpResponse &Response)
 {
    if (InitRestRequest(strUrl, Headers, Response))
    {
@@ -461,8 +460,8 @@ const bool CppHTTPClient::Put(const std::string& strUrl, const CppHTTPClient::He
  * @retval true   Successfully requested the URI.
  * @retval false  Encountered a problem.
  */
-const bool CppHTTPClient::Put(const std::string& strUrl, const CppHTTPClient::HeadersMap& Headers,
-   const CppHTTPClient::ByteBuffer& Data, CppHTTPClient::HttpResponse& Response)
+const bool CppHTTPClient::Put(const std::string &strUrl, const CppHTTPClient::HeadersMap &Headers,
+                              const CppHTTPClient::ByteBuffer &Data, CppHTTPClient::HttpResponse &Response)
 {
    if (InitRestRequest(strUrl, Headers, Response))
    {
@@ -491,6 +490,21 @@ const bool CppHTTPClient::Put(const std::string& strUrl, const CppHTTPClient::He
       return false;
 }
 
+std::string CppHTTPClient::ParseHttpResponse(const CppHTTPClient::HttpResponse &Resonse)
+{
+   std::string re = "{";
+   re += "\"Status-Code\":" + std::to_string(Resonse.iCode);
+   re += ", \"Headers\":[{";
+   for (auto it = Resonse.mapHeaders.cbegin(); it != Resonse.mapHeaders.cend(); it++)
+   {
+      re += "\"" + it->first + "\":" + "\"" + it->second + "\",";
+   }
+   re.pop_back();
+   re += "}],";
+   re += "\"Body\":" + Resonse.strBody + "}";
+   return re;
+}
+
 // STRING HELPERS
 
 /**
@@ -504,20 +518,20 @@ const bool CppHTTPClient::Put(const std::string& strUrl, const CppHTTPClient::He
 std::string CppHTTPClient::StringFormat(const std::string strFormat, ...)
 {
    int n = (static_cast<int>(strFormat.size())) * 2; // Reserve two times as much as the length of the strFormat
-   
+
    std::unique_ptr<char[]> pFormatted;
 
    va_list ap;
 
-   while(true)
+   while (true)
    {
       pFormatted.reset(new char[n]); // Wrap the plain char array into the unique_ptr
       strcpy(&pFormatted[0], strFormat.c_str());
-      
+
       va_start(ap, strFormat);
       int iFinaln = vsnprintf(&pFormatted[0], n, strFormat.c_str(), ap);
       va_end(ap);
-      
+
       if (iFinaln < 0 || iFinaln >= n)
       {
          n += abs(iFinaln - n + 1);
@@ -546,17 +560,15 @@ std::string CppHTTPClient::StringFormat(const std::string strFormat, ...)
  *
  * @param [in/out] str string to be trimmed
  */
-inline void CppHTTPClient::TrimSpaces(std::string& str)
+inline void CppHTTPClient::TrimSpaces(std::string &str)
 {
    // trim from left
    str.erase(str.begin(),
-      std::find_if(str.begin(), str.end(), [](char c) {return !isspace(c); })
-   );
+             std::find_if(str.begin(), str.end(), [](char c) { return !isspace(c); }));
 
    // trim from right
-   str.erase(std::find_if(str.rbegin(), str.rend(), [](char c) {return !isspace(c); }).base(),
-      str.end()
-   );
+   str.erase(std::find_if(str.rbegin(), str.rend(), [](char c) { return !isspace(c); }).base(),
+             str.end());
 }
 
 // CURL CALLBACKS
@@ -578,11 +590,11 @@ inline void CppHTTPClient::TrimSpaces(std::string& str)
  *
  * @return (size * nmemb)
  */
-size_t CppHTTPClient::RestWriteCallback(void* pCurlData, size_t usBlockCount, size_t usBlockSize, void* pUserData)
+size_t CppHTTPClient::RestWriteCallback(void *pCurlData, size_t usBlockCount, size_t usBlockSize, void *pUserData)
 {
-   CppHTTPClient::HttpResponse* pServerResponse;
-   pServerResponse = reinterpret_cast<CppHTTPClient::HttpResponse*>(pUserData);
-   pServerResponse->strBody.append(reinterpret_cast<char*>(pCurlData), usBlockCount * usBlockSize);
+   CppHTTPClient::HttpResponse *pServerResponse;
+   pServerResponse = reinterpret_cast<CppHTTPClient::HttpResponse *>(pUserData);
+   pServerResponse->strBody.append(reinterpret_cast<char *>(pCurlData), usBlockCount * usBlockSize);
 
    return (usBlockCount * usBlockSize);
 }
@@ -597,12 +609,12 @@ size_t CppHTTPClient::RestWriteCallback(void* pCurlData, size_t usBlockCount, si
  * @param userdata pointer to user data object to save header data
  * @return size * nmemb;
  */
-size_t CppHTTPClient::RestHeaderCallback(void* pCurlData, size_t usBlockCount, size_t usBlockSize, void* pUserData)
+size_t CppHTTPClient::RestHeaderCallback(void *pCurlData, size_t usBlockCount, size_t usBlockSize, void *pUserData)
 {
-   CppHTTPClient::HttpResponse* pServerResponse;
-   pServerResponse = reinterpret_cast<CppHTTPClient::HttpResponse*>(pUserData);
+   CppHTTPClient::HttpResponse *pServerResponse;
+   pServerResponse = reinterpret_cast<CppHTTPClient::HttpResponse *>(pUserData);
 
-   std::string strHeader(reinterpret_cast<char*>(pCurlData), usBlockCount * usBlockSize);
+   std::string strHeader(reinterpret_cast<char *>(pCurlData), usBlockCount * usBlockSize);
    size_t usSeperator = strHeader.find_first_of(":");
    if (std::string::npos == usSeperator)
    {
@@ -637,12 +649,12 @@ size_t CppHTTPClient::RestHeaderCallback(void* pCurlData, size_t usBlockCount, s
  *
  * @return (size * nmemb)
  */
-size_t CppHTTPClient::RestReadCallback(void* pCurlData, size_t usBlockCount, size_t usBlockSize, void* pUserData)
+size_t CppHTTPClient::RestReadCallback(void *pCurlData, size_t usBlockCount, size_t usBlockSize, void *pUserData)
 {
    // get upload struct
-   CppHTTPClient::UploadObject* Payload;
+   CppHTTPClient::UploadObject *Payload;
 
-   Payload = reinterpret_cast<CppHTTPClient::UploadObject*>(pUserData);
+   Payload = reinterpret_cast<CppHTTPClient::UploadObject *>(pUserData);
 
    // set correct sizes
    size_t usCurlSize = usBlockCount * usBlockSize;
@@ -655,6 +667,6 @@ size_t CppHTTPClient::RestReadCallback(void* pCurlData, size_t usBlockCount, siz
    Payload->usLength -= usCopySize; // remaining bytes to be sent
    Payload->pszData += usCopySize;  // next byte to the chunk that will be sent
 
-                                    /** return copied size */
+   /** return copied size */
    return usCopySize;
 }
