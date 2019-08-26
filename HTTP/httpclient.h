@@ -22,19 +22,6 @@ public:
    typedef std::unordered_map<std::string, std::string>              HeadersMap;
    typedef std::vector<char> ByteBuffer;
 
-
-   // Progress Function Data Object - parameter void* of ProgressFnCallback references it
-   struct ProgressFnStruct
-   {
-      ProgressFnStruct() : dLastRunTime(0), pCurl(nullptr), pOwner(nullptr) {}
-      double dLastRunTime;
-      CURL*  pCurl;
-      /* owner of the CppHTTPClient object. can be used in the body of the progress
-      * function to send signals to the owner (e.g. to update a GUI's progress bar)
-      */
-      void*  pOwner;
-   };
-
    // HTTP response data
    struct HttpResponse
    {
@@ -62,16 +49,10 @@ public:
    CppHTTPClient(const CppHTTPClient& Copy) = delete;
    CppHTTPClient& operator=(const CppHTTPClient& Copy) = delete;
 
-   // Setters - Getters (for unit tests)
-   /*inline*/ void SetProgressFnCallback(void* pOwner, const ProgressFnCallback& fnCallback);
+   // Setters - Getters (just for unit tests)
    inline void SetTimeout(const int& iTimeout) { m_iCurlTimeout = iTimeout; }
    inline void SetNoSignal(const bool& bNoSignal) { m_bNoSignal = bNoSignal; }
    inline void SetHTTPS(const bool& bEnableHTTPS) { m_bHTTPS = bEnableHTTPS; }
-   inline auto GetProgressFnCallback() const
-   {
-      return m_fnProgressCallback.target<int(*)(void*, double, double, double, double)>();
-   }
-   inline void* GetProgressFnCallbackOwner() const { return m_ProgressStruct.pOwner; }
    inline const int GetTimeout() const { return m_iCurlTimeout; }
    inline const bool GetNoSignal() const { return m_bNoSignal; }
    inline const std::string& GetURL()      const { return m_strURL; }
@@ -81,7 +62,8 @@ public:
    // Session
    const bool InitSession(const bool& bHTTPS = false,
                           const SettingsFlag& SettingsFlags = ALL_FLAGS);
-   virtual const bool CleanupSession();
+   const bool CleanupSession();
+
    static int GetCurlSessionCount() { return s_iCurlSession; }
    const CURL* GetCurlPointer() const { return m_pCurlSession; }
 
@@ -161,11 +143,6 @@ protected:
 
    CURL*         m_pCurlSession;
    int           m_iCurlTimeout;
-
-   // Progress function
-   ProgressFnCallback    m_fnProgressCallback;
-   ProgressFnStruct      m_ProgressStruct;
-   bool                  m_bProgressCallbackSet;
 
    // Log printer callback
    LogFnCallback         m_oLog;
