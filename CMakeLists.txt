@@ -8,15 +8,14 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/lib)
 
 add_definitions(-DLINUX)
 
-include_directories(HTTP)
-include_directories(RESTwrapper)
+include_directories(include)
+include_directories(include/rapidjson)
 
-add_subdirectory(HTTP)
+add_subdirectory(src)
 add_subdirectory(test)
-add_subdirectory(RESTwrapper)
 
 
-add_executable(main main.cpp)
+add_executable(main ./example/main.cpp)
 
 link_directories(${PROJECT_SOURCE_DIR}/build/lib)
-target_link_libraries(main cpprestclient cpphttpclient pthread curl)
+target_link_libraries(main cpprestclient pthread curl)

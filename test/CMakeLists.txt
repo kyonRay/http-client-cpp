@@ -10,12 +10,11 @@ include_directories(${CURL_INCLUDE_DIRS})
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
 
-include_directories(../HTTP)
-include_directories(./)
-include_directories(../rapidjson)
+include_directories(../include)
+include_directories(../include/rapidjson)
 
 #Output Setup
 add_executable(test_httpclient test.cpp)
 
 #Link setup
-target_link_libraries(test_httpclient cpphttpclient ${GTEST_LIBRARIES} pthread curl)
+target_link_libraries(test_httpclient cpprestclient ${GTEST_LIBRARIES} pthread curl)
