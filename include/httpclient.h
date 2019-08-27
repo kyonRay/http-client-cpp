@@ -33,8 +33,6 @@ public:
       std::string strBody;   // HTTP response body
    };
 
-   static std::string ParseHttpResponse(const HttpResponse &response);
-
    enum SettingsFlag
    {
       NO_FLAGS = 0x00,

@@ -490,20 +490,6 @@ const bool CppHTTPClient::Put(const std::string &strUrl, const CppHTTPClient::He
       return false;
 }
 
-std::string CppHTTPClient::ParseHttpResponse(const CppHTTPClient::HttpResponse &Resonse)
-{
-   std::string re = "{";
-   re += "\"Status-Code\":" + std::to_string(Resonse.iCode);
-   re += ", \"Headers\":[{";
-   for (auto it = Resonse.mapHeaders.cbegin(); it != Resonse.mapHeaders.cend(); it++)
-   {
-      re += "\"" + it->first + "\":" + "\"" + it->second + "\",";
-   }
-   re.pop_back();
-   re += "}],";
-   re += "\"Body\":" + Resonse.strBody + "}";
-   return re;
-}
 
 // STRING HELPERS
 

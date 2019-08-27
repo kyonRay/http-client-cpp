@@ -1,6 +1,5 @@
 #include "gtest/gtest.h" // Google Test Framework
 
-
 #include <mutex>
 #include <thread>
 
@@ -9,6 +8,7 @@
 #include "document.h"     // rapidjson's DOM-style API
 #include "prettywriter.h" // for stringify JSON
 #include "httpclient.h"
+#include "restwrapper.h"
 
 #define PRINT_LOG [](const std::string &strLogMsg) { std::cout << strLogMsg << std::endl; }
 
@@ -75,6 +75,46 @@ protected:
       m_pRESTClient.reset();
    }
 };
+
+class RestWrapperTest : public ::testing::Test
+{
+protected:
+   std::string strUrl;
+   std::string extraHeaderJSON;
+   std::string strDataJSON;
+   RestWrapperTest()
+   {
+      strUrl = "http://httpbin.org/get";
+      extraHeaderJSON = "{\
+         \"Header\":{\
+            \"User-Agent\":\"CppHTTPClient-agent/0.1\"\
+         }\
+      }";
+      strDataJSON = "{\"DATA\":\"DATA\"}";
+   }
+   virtual ~RestWrapperTest()
+   {
+   }
+   void sendText()
+   {
+      extraHeaderJSON = "{\
+         \"Header\":{\
+            \"User-Agent\":\"CppHTTPClient-agent/0.1\",\
+            \"Content-Type\":\"text/text\"\
+         }\
+      }";
+   }
+   void sendPOST()
+   {
+      strUrl = "http://httpbin.org/post";
+   }
+   void sendPUT()
+   {
+      strUrl = "http://httpbin.org/put";
+   }
+};
+
+#pragma region Unit Tests
 
 // Unit tests
 
@@ -176,8 +216,9 @@ TEST(HTTPClient, TestMultithreading)
    ASSERT_EQ(uInitialCount, CppHTTPClient::GetCurlSessionCount());
 }
 
-/* REST tests */
+#pragma endregion Unit Tests
 
+#pragma region REST Tests
 // HEAD Tests
 // check return code
 TEST_F(RestClientTest, TestRestClientHeadCode)
@@ -427,6 +468,174 @@ TEST_F(RestClientTest, TestRestClientDeleteHeaders)
    ASSERT_TRUE(m_Response.mapHeaders.find("Connection") != m_Response.mapHeaders.end());
    EXPECT_STREQ("keep-alive", m_Response.mapHeaders["Connection"].c_str());
 }
+
+#pragma endregion REST Tests
+
+#pragma region REST Wrapper Tests
+
+/// HEAD Tests
+// check return codes
+TEST_F(RestWrapperTest, TestRestWrapperHeadCode)
+{
+   rapidjson::Document d;
+   string re = HeadWrapper(strUrl, extraHeaderJSON);
+   EXPECT_FALSE(d.Parse(re.c_str()).HasParseError());
+   EXPECT_EQ(200, d["Status-Code"].GetInt());
+   EXPECT_TRUE(d.HasMember("Header"));
+   EXPECT_TRUE(d.HasMember("Body"));
+}
+
+// empty JSON
+TEST_F(RestWrapperTest, TestRestWrapperEptJSON)
+{
+   extraHeaderJSON = "";
+   string re = HeadWrapper(strUrl, extraHeaderJSON);
+   EXPECT_STRNE(re.c_str(), "");
+}
+
+// Error JSON
+TEST_F(RestWrapperTest, TestRestWrapperErrJSON)
+{
+   extraHeaderJSON = "{\
+         \"Header\":{\
+            \"User-Agent\":\"CppHTTPClient-agent/0.1\"\
+         }\
+      "; //ERROR
+   string re = HeadWrapper(strUrl, extraHeaderJSON);
+   EXPECT_STREQ(re.c_str(), "");
+}
+
+// no-Header JSON
+TEST_F(RestWrapperTest, TestRestWrapperNHJSON)
+{
+   extraHeaderJSON = "{\
+            \"User-Agent\":\"CppHTTPClient-agent/0.1\"\
+      }"; // ERROR
+   string re = HeadWrapper(strUrl, extraHeaderJSON);
+   EXPECT_STREQ(re.c_str(), "");
+}
+
+/// GET Tests
+// check return codes
+TEST_F(RestWrapperTest, TestRestWrapperGetCode)
+{
+   rapidjson::Document d;
+   string re = GetWrapper(strUrl, extraHeaderJSON);
+   EXPECT_FALSE(d.Parse(re.c_str()).HasParseError());
+   EXPECT_EQ(200, d["Status-Code"]);
+   EXPECT_TRUE(d.HasMember("Header"));
+   EXPECT_TRUE(d.HasMember("Body"));
+}
+
+// check for failure
+TEST_F(RestWrapperTest, TestRestWrapperGetFailureCode)
+{
+   strUrl = "http://nonexistent";
+   EXPECT_EQ("", GetWrapper(strUrl, extraHeaderJSON));
+}
+
+TEST_F(RestWrapperTest, TestRestWrapperGetHeaders)
+{
+   string re = GetWrapper(strUrl, extraHeaderJSON);
+   rapidjson::Document d;
+   ASSERT_FALSE(d.Parse(re.c_str()).HasParseError());
+   EXPECT_STREQ("keep-alive", d["Header"]["Connection"].GetString());
+}
+
+/// POST Tests
+// check return code
+TEST_F(RestWrapperTest, TestRestWrapperPOSTCode)
+{
+   rapidjson::Document d;
+   sendPOST();
+   string re = PostWrapper(strUrl, extraHeaderJSON, strDataJSON);
+   EXPECT_FALSE(d.Parse(re.c_str()).HasParseError());
+   EXPECT_EQ(200, d["Status-Code"].GetInt());
+   EXPECT_TRUE(d.HasMember("Header"));
+   EXPECT_TRUE(d.HasMember("Body"));
+}
+
+// check for failure
+TEST_F(RestWrapperTest, TestRestWrapperPOSTFailureCode)
+{
+   sendText();
+   sendPOST();
+   strUrl = "http://nonexistent";
+   std::string re = PostWrapper(strUrl, extraHeaderJSON, strDataJSON);
+   EXPECT_STREQ("", re.c_str());
+}
+
+TEST_F(RestWrapperTest, TestRestWrapperPOSTHeaders)
+{
+   sendPOST();
+   string re = PostWrapper(strUrl, extraHeaderJSON, strDataJSON);
+   rapidjson::Document d;
+   ASSERT_FALSE(d.Parse(re.c_str()).HasParseError());
+   EXPECT_STREQ("keep-alive", d["Header"]["Connection"].GetString());
+}
+
+/// PUT Tests
+// check return code
+TEST_F(RestWrapperTest, TestRestWrapperPUTCode)
+{
+   rapidjson::Document d;
+   sendPUT();
+   string re = PutWrapper(strUrl, extraHeaderJSON, strDataJSON);
+   EXPECT_FALSE(d.Parse(re.c_str()).HasParseError());
+   EXPECT_EQ(200, d["Status-Code"].GetInt());
+   EXPECT_TRUE(d.HasMember("Header"));
+   EXPECT_TRUE(d.HasMember("Body"));
+}
+
+// check for failure
+TEST_F(RestWrapperTest, TestRestWrapperPUTFailureCode)
+{
+   strUrl = "http://nonexistent";
+   sendText();
+   std::string re = PutWrapper(strUrl, extraHeaderJSON, strDataJSON);
+   EXPECT_STREQ("", re.c_str());
+}
+
+TEST_F(RestWrapperTest, TestRestWrapperPUTHeaders)
+{
+   sendPUT();
+   string re = PutWrapper(strUrl, extraHeaderJSON, strDataJSON);
+   rapidjson::Document d;
+   ASSERT_FALSE(d.Parse(re.c_str()).HasParseError());
+   EXPECT_STREQ("keep-alive", d["Header"]["Connection"].GetString());
+}
+
+/// DELETE Tests
+// check return code
+TEST_F(RestWrapperTest, TestRestWrapperDelCode)
+{
+   strUrl = "http://httpbin.org/delete";
+   rapidjson::Document d;
+   string re = DelWrapper(strUrl, extraHeaderJSON);
+   EXPECT_FALSE(d.Parse(re.c_str()).HasParseError());
+   EXPECT_EQ(200, d["Status-Code"].GetInt());
+   EXPECT_TRUE(d.HasMember("Header"));
+   EXPECT_TRUE(d.HasMember("Body"));
+}
+
+// check for failure
+TEST_F(RestWrapperTest, TestRestWrapperDelFailureCode)
+{
+   strUrl = "http://nonexistent";
+   std::string re = DelWrapper(strUrl, extraHeaderJSON);
+   EXPECT_STREQ("", re.c_str());
+}
+
+TEST_F(RestWrapperTest, TestRestWrapperDelHeaders)
+{
+   sendPUT();
+   string re = DelWrapper(strUrl, extraHeaderJSON);
+   rapidjson::Document d;
+   ASSERT_FALSE(d.Parse(re.c_str()).HasParseError());
+   EXPECT_STREQ("keep-alive", d["Header"]["Connection"].GetString());
+}
+
+#pragma endregion REST Wrapper Tests
 
 } // namespace
 

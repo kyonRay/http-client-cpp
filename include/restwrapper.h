@@ -1,6 +1,14 @@
 #ifndef RESTWRAPPER_H
 #define RESTWRAPPER_H
 #include "httpclient.h"
+#include "document.h"     // rapidjson's DOM-style API
+#include "prettywriter.h" // for stringify JSON
+#include "stringbuffer.h"
+#include "writer.h"
+#include "error/en.h"
+
+#include <string>
+#include <unordered_map>
 
 using namespace std;
 

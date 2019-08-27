@@ -1,12 +1,39 @@
-#include <string>
-#include <unordered_map>
 #include "restwrapper.h"
-#include "document.h"     // rapidjson's DOM-style API
-#include "prettywriter.h" // for stringify JSON
-#include "stringbuffer.h"
-#include "writer.h"
-#include "error/en.h"
+
 #define PRINT_LOG [](const std::string &strLogMsg) { std::cout << strLogMsg << std::endl; }
+
+/// Resonse parse to JSON
+const std::string ParseHttpResponse(const CppHTTPClient::HttpResponse &re)
+{
+    rapidjson::Document document;
+    rapidjson::Document::AllocatorType &alloc = document.GetAllocator();
+    rapidjson::Value root(rapidjson::kObjectType);
+    rapidjson::Value rootMap(rapidjson::kObjectType);
+    rapidjson::Value key(rapidjson::kStringType);
+    rapidjson::Value valueInt(rapidjson::kNumberType);
+    rapidjson::Value valueString(rapidjson::kStringType);
+
+    key.SetString("Status-Code", alloc);
+    valueInt.SetInt(re.iCode);
+    root.AddMember(key, valueInt, alloc);
+
+    for (CppHTTPClient::HeadersMap::const_iterator it = re.mapHeaders.cbegin(); it != re.mapHeaders.cend(); it++)
+    {
+        key.SetString(it->first.c_str(), alloc);
+        valueString.SetString(it->second.c_str(), alloc);
+        rootMap.AddMember(key, valueString, alloc);
+    }
+    key.SetString("Header", alloc);
+    root.AddMember(key, rootMap, alloc);
+    key.SetString("Body", alloc);
+    valueString.SetString(re.strBody.c_str(), alloc);
+    root.AddMember(key, valueString, alloc);
+
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    root.Accept(writer);
+    return buffer.GetString();
+}
 
 inline bool checkJSONCorrectness(const std::string &str)
 {
@@ -22,32 +49,35 @@ inline bool checkJSONCorrectness(const std::string &str)
     return flag;
 }
 
-void ParseJSON2HeadersMap(const std::string &str, CppHTTPClient::HeadersMap &headermap)
+bool ParseJSON2HeadersMap(const std::string &str, CppHTTPClient::HeadersMap &headermap)
 {
     if (str.length() == 0)
-        return;
+        return false;
     rapidjson::Document d;
     if (d.Parse(str.c_str()).HasParseError())
     {
         fprintf(stderr, "JSON Parse Error(offset %u): %s\n",
                 (unsigned)d.GetErrorOffset(),
                 GetParseError_En(d.GetParseError()));
-        return;
+        return false;
     }
     else if (!d.HasMember("Header"))
     {
+        cout << "JSON string: " << str << endl;
         cout << "JSON Parse Error: JSON string dose not have member called \"Header\"." << endl;
+        return false;
     }
     else
     {
-        for (rapidjson::Value::MemberIterator iter = d.MemberBegin(); iter != d.MemberEnd(); iter++)
+        rapidjson::Value &header = d["Header"];
+        for (rapidjson::Value::MemberIterator iter = header.MemberBegin(); iter != header.MemberEnd(); iter++)
         {
             const char *key = iter->name.GetString();
             const rapidjson::Value &val = iter->value;
             headermap.emplace(string(key), string(val.GetString()));
         }
     }
-    return;
+    return true;
 }
 
 const std::string PostWrapper(const std::string &strUrl,
@@ -56,8 +86,9 @@ const std::string PostWrapper(const std::string &strUrl,
 {
     CppHTTPClient::HeadersMap RequestHeaders;
     CppHTTPClient::HttpResponse ServerResponse;
-    if (extraHeadersJSON != "")
-        ParseJSON2HeadersMap(extraHeadersJSON, RequestHeaders);
+    if (!extraHeadersJSON.empty() && extraHeadersJSON.length() != 0)
+        if (!ParseJSON2HeadersMap(extraHeadersJSON, RequestHeaders))
+            return "";
     std::string re = "";
     CppHTTPClient pRESTClient(PRINT_LOG);
 
@@ -71,7 +102,7 @@ const std::string PostWrapper(const std::string &strUrl,
     {
         if (pRESTClient.Post(strUrl, RequestHeaders, strPostDataJSON, ServerResponse))
         {
-            re = CppHTTPClient::ParseHttpResponse(ServerResponse);
+            re = ParseHttpResponse(ServerResponse);
         }
         else
         {
@@ -87,7 +118,9 @@ const std::string GetWrapper(const std::string &strUrl,
 {
     CppHTTPClient::HeadersMap RequestHeaders;
     CppHTTPClient::HttpResponse ServerResponse;
-    ParseJSON2HeadersMap(extraHeadersJSON, RequestHeaders);
+    if (!extraHeadersJSON.empty() && extraHeadersJSON.length() != 0)
+        if (!ParseJSON2HeadersMap(extraHeadersJSON, RequestHeaders))
+            return "";
     std::string re = "";
     CppHTTPClient pRESTClient(PRINT_LOG);
 
@@ -95,7 +128,7 @@ const std::string GetWrapper(const std::string &strUrl,
 
     if (pRESTClient.Get(strUrl, RequestHeaders, ServerResponse))
     {
-        re = CppHTTPClient::ParseHttpResponse(ServerResponse);
+        re = ParseHttpResponse(ServerResponse);
     }
     else
     {
@@ -110,7 +143,9 @@ const std::string HeadWrapper(const std::string &strUrl,
 {
     CppHTTPClient::HeadersMap RequestHeaders;
     CppHTTPClient::HttpResponse ServerResponse;
-    ParseJSON2HeadersMap(extraHeadersJSON, RequestHeaders);
+    if (!extraHeadersJSON.empty() && extraHeadersJSON.length() != 0)
+        if (!ParseJSON2HeadersMap(extraHeadersJSON, RequestHeaders))
+            return "";
     std::string re = "";
     CppHTTPClient pRESTClient(PRINT_LOG);
 
@@ -118,7 +153,7 @@ const std::string HeadWrapper(const std::string &strUrl,
 
     if (pRESTClient.Head(strUrl, RequestHeaders, ServerResponse))
     {
-        re = CppHTTPClient::ParseHttpResponse(ServerResponse);
+        re = ParseHttpResponse(ServerResponse);
     }
     else
     {
@@ -134,7 +169,9 @@ const std::string DelWrapper(const std::string &strUrl,
 {
     CppHTTPClient::HeadersMap RequestHeaders;
     CppHTTPClient::HttpResponse ServerResponse;
-    ParseJSON2HeadersMap(extraHeadersJSON, RequestHeaders);
+    if (!extraHeadersJSON.empty() && extraHeadersJSON.length() != 0)
+        if (!ParseJSON2HeadersMap(extraHeadersJSON, RequestHeaders))
+            return "";
     std::string re = "";
     CppHTTPClient pRESTClient(PRINT_LOG);
 
@@ -142,7 +179,7 @@ const std::string DelWrapper(const std::string &strUrl,
 
     if (pRESTClient.Del(strUrl, RequestHeaders, ServerResponse))
     {
-        re = CppHTTPClient::ParseHttpResponse(ServerResponse);
+        re = ParseHttpResponse(ServerResponse);
     }
     else
     {
@@ -159,7 +196,9 @@ const std::string PutWrapper(const std::string &strUrl,
 {
     CppHTTPClient::HeadersMap RequestHeaders;
     CppHTTPClient::HttpResponse ServerResponse;
-    ParseJSON2HeadersMap(extraHeadersJSON, RequestHeaders);
+    if (!extraHeadersJSON.empty() && extraHeadersJSON.length() != 0)
+        if (!ParseJSON2HeadersMap(extraHeadersJSON, RequestHeaders))
+            return "";
     std::string re = "";
     CppHTTPClient pRESTClient(PRINT_LOG);
 
@@ -173,7 +212,7 @@ const std::string PutWrapper(const std::string &strUrl,
     {
         if (pRESTClient.Put(strUrl, RequestHeaders, strPutDataJSON, ServerResponse))
         {
-            re = CppHTTPClient::ParseHttpResponse(ServerResponse);
+            re = ParseHttpResponse(ServerResponse);
         }
         else
         {
