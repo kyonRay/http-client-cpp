@@ -109,7 +109,7 @@ const std::string functionName(const std::string &strUrl,
 
     ```json
     {
-      Header:{
+      "Header":{
         "Transfer-Encoding":"chunked"
       }
     }
@@ -169,7 +169,7 @@ const std::string functionName(const std::string &strUrl,
   "Status-Code":200,
   "Header":{
     "Content-Type":"application/json;charset=UTF-8",
-    ...
+    "...":"..."
   },
   "Body":"{\"XXX\":\"YYY\"}"
 }
@@ -211,7 +211,7 @@ string result = PostWrapper(url, extraHeader, strPostDataJSON);
   "Status-Code":200,
   "Header":{
     "Content-Type":"application/json;charset=UTF-8",
-    ...
+    "...":"..."
   },
   "Body":"{\"XXX\":\"YYY\"}"
 }
@@ -252,7 +252,7 @@ string result = GetWrapper(url, extraHeader);
   "Status-Code":200,
   "Header":{
     "Content-Type":"application/json;charset=UTF-8",
-    ...
+    "...":"..."
   },
   "Body":"{\"XXX\":\"YYY\"}"
 }
@@ -293,7 +293,7 @@ string result = HeadWrapper(url, extraHeader);
   "Status-Code":200,
   "Header":{
     "Content-Type":"application/json;charset=UTF-8",
-    ...
+    "...":"..."
   },
   "Body":"{\"XXX\":\"YYY\"}"
 }
@@ -335,7 +335,7 @@ string result = DelWrapper(url, extraHeader);
   "Status-Code":200,
   "Header":{
     "Content-Type":"application/json;charset=UTF-8",
-    ...
+    "...":"..."
   },
   "Body":"{\"XXX\":\"YYY\"}"
 }
